@@ -29,6 +29,7 @@ import click
 import requests
 
 from trezorlib import (
+    beam,
     btc,
     cardano,
     coins,
@@ -1630,6 +1631,17 @@ def tezos_sign_tx(connect, address, file):
     msg = protobuf.dict_to_proto(proto.TezosSignTx, json.load(file))
     return tezos.sign_tx(client, address_n, msg)
 
+
+#
+# BEAM functions
+#
+@cli.command(help="Display Beam Message.")
+@click.option("-t", "--text", required=True, help="Some text to display")
+@click.option("-d", "--show-display", is_flag=True)
+@click.pass_obj
+def beam_display_message(connect, text, show_display):
+    client = connect()
+    return beam.display_message(client, text, show_display)
 
 #
 # Ontology functions

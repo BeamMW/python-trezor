@@ -39,13 +39,16 @@ __all__ = ["by_name", "slip44", "tx_api"]
 
 try:
     coins_list = _load_coins_json()
-    by_name = {coin["coin_name"]: coin for coin in coins_list}
+    #by_name = {coin["coin_name"]: coin for coin in coins_list}
+    # In misc coins we have different fields and fields' names
+    by_name = {coin["name"]: coin for coin in coins_list}
 except Exception as e:
     raise ImportError("Failed to load coins.json. Check your installation.") from e
 
 slip44 = {name: coin["slip44"] for name, coin in by_name.items()}
-tx_api = {
-    name: TxApi(coin)
-    for name, coin in by_name.items()
-    if coin["blockbook"] or coin["bitcore"]
-}
+# In misc coins we have different fields and fields' names
+#tx_api = {
+#    name: TxApi(coin)
+#    for name, coin in by_name.items()
+#    if coin["blockbook"] or coin["bitcore"]
+#}

@@ -47,7 +47,9 @@ def build_coins_json(dst):
     sys.path.insert(0, TOOLS_PATH)
     import coin_info
 
-    coins = coin_info.coin_info().bitcoin
+    #coins = coin_info.coin_info().bitcoin
+    # Build info for MISC coins instead of bitcoins.
+    coins = coin_info.coin_info().misc
     support = coin_info.support_info(coins)
     for coin in coins:
         coin["support"] = support[coin["key"]]
