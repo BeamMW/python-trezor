@@ -18,7 +18,7 @@ from . import messages
 from .tools import expect
 
 
-@expect(messages.BeamDisplayMessage, field='text')
+@expect(messages.BeamConfirmResponseMessage, field='text')
 def display_message(client, text, show_display=True):
     return client.call(
         messages.BeamDisplayMessage(text=text, show_display=show_display)
