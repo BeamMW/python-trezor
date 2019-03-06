@@ -15,7 +15,7 @@
 # If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.
 
 from . import messages
-from .tools import expect
+from .tools import expect, CallException, normalize_nfc
 
 
 @expect(messages.BeamConfirmResponseMessage, field='text')
@@ -23,3 +23,37 @@ def display_message(client, text, show_display=True):
     return client.call(
         messages.BeamDisplayMessage(text=text, show_display=show_display)
     )
+
+@expect(messages.BeamSignedMessage)
+def sign_message(client, message, show_display=True):
+    return client.call(
+        messages.BeamSignMessage(msg=message, show_display=show_display)
+    )
+
+def verify_message(client, nonce_pub_x, nonce_pub_y, sign_k, message):
+    if nonce_pub_x.startswith('0x'):
+        nonce_pub_x = nonce_pub_x[2:]
+        print('X: {}'.format(nonce_pub_x))
+    if nonce_pub_y.startswith('0x'):
+        nonce_pub_y = nonce_pub_y[2:]
+        print('Y: {}'.format(nonce_pub_y))
+    if sign_k.startswith('0x'):
+        sign_k = sign_k[2:]
+        print('K: {}'.format(sign_k))
+    nonce_pub_x = bytearray.fromhex(nonce_pub_x)
+    nonce_pub_y = bytearray.fromhex(nonce_pub_y)
+    sign_k = bytearray.fromhex(sign_k)
+    message=normalize_nfc(message)
+
+    try:
+        signature = messages.BeamSignature(nonce_pub_x=nonce_pub_x, nonce_pub_y=nonce_pub_y, sign_k=sign_k)
+        resp = client.call(
+            messages.BeamVerifyMessage(
+                signature=signature, message=message
+            )
+        )
+    except CallException as e:
+        resp = e
+    if isinstance(resp, messages.Success):
+        return True
+    return False

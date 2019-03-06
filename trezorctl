@@ -1649,6 +1649,34 @@ def beam_display_message(connect, text, show_display):
     #print('Status: {}'.format(res.response))
     return res
 
+@cli.command(help="Sign message with Beam SK.")
+@click.argument("message")
+@click.option("-d", "--show-display", is_flag=True)
+@click.pass_obj
+def beam_sign_message(connect, message, show_display):
+    client = connect()
+    res = beam.sign_message(client, message, show_display)
+
+    print('Ok')
+    print('Original message: {}'.format(message))
+    print('Received message: {}'.format(res))
+    return res
+
+@cli.command(help="Sign message with Beam SK.")
+@click.argument("nonce-pub-x")
+@click.argument("nonce-pub-y")
+@click.argument("sign-k")
+@click.argument("message")
+@click.pass_obj
+def beam_verify_message(connect, nonce_pub_x, nonce_pub_y, sign_k, message):
+    client = connect()
+    res = beam.verify_message(client, nonce_pub_x, nonce_pub_y, sign_k, message);
+
+    print('Ok')
+    print('Original message: {}'.format(message))
+    print('Received message: {}'.format(res))
+    return res
+
 #
 # Ontology functions
 #
