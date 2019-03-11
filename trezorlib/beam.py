@@ -30,30 +30,20 @@ def sign_message(client, message, show_display=True):
         messages.BeamSignMessage(msg=message, show_display=show_display)
     )
 
-def verify_message(client, nonce_pub_x, nonce_pub_y, sign_k, pk, message):
-    if nonce_pub_x.startswith('0x'):
-        nonce_pub_x = nonce_pub_x[2:]
-        print('X: {}'.format(nonce_pub_x))
-    if nonce_pub_y.startswith('0x'):
-        nonce_pub_y = nonce_pub_y[2:]
-        print('Y: {}'.format(nonce_pub_y))
-    if sign_k.startswith('0x'):
-        sign_k = sign_k[2:]
-        print('K: {}'.format(sign_k))
-    if pk.startswith('0x'):
-        pk = pk[2:]
-        print('PK: {}'.format(pk))
-    nonce_pub_x = bytearray.fromhex(nonce_pub_x)
-    nonce_pub_y = bytearray.fromhex(nonce_pub_y)
-    sign_k = bytearray.fromhex(sign_k)
-    pk = bytearray.fromhex(pk)
+def verify_message(client, nonce_pub_x, nonce_pub_y, sign_k, pk_x, pk_y, message):
+    nonce_pub_x = hex_str_to_bytearray(nonce_pub_x, 'Nonce X', True)
+    nonce_pub_y = hex_str_to_bytearray(nonce_pub_y, 'Nonce Y', True)
+    sign_k = hex_str_to_bytearray(sign_k, 'K', True)
+    pk_x = hex_str_to_bytearray(pk_x, 'PK X', True)
+    pk_y = hex_str_to_bytearray(pk_y, 'PK Y', True)
     message=normalize_nfc(message)
 
     try:
         signature = messages.BeamSignature(nonce_pub_x=nonce_pub_x, nonce_pub_y=nonce_pub_y, sign_k=sign_k)
+        public_key = messages.BeamPublicKey(pub_x=pk_x, pub_y=pk_y)
         resp = client.call(
             messages.BeamVerifyMessage(
-                signature=signature, xpub=pk, message=message
+                signature=signature, public_key=public_key, message=message
             )
         )
     except CallException as e:
@@ -67,3 +57,11 @@ def get_public_key(client, show_display=True):
     return client.call(
         messages.BeamGetPublicKey(show_display=show_display)
     )
+
+def hex_str_to_bytearray(hex_data, name='', print_info=False):
+    if hex_data.startswith('0x'):
+        hex_data = hex_data[2:]
+        if print_info:
+            print('Converted {}: {}'.format(name, hex_data))
+
+    return bytearray.fromhex(hex_data)

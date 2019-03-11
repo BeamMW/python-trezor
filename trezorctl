@@ -1676,12 +1676,13 @@ def beam_sign_message(connect, message, show_display):
 @click.argument("nonce-pub-x")
 @click.argument("nonce-pub-y")
 @click.argument("sign-k")
-@click.argument("pk")
+@click.argument("pk-x")
+@click.argument("pk-y")
 @click.argument("message")
 @click.pass_obj
-def beam_verify_message(connect, nonce_pub_x, nonce_pub_y, sign_k, pk, message):
+def beam_verify_message(connect, nonce_pub_x, nonce_pub_y, sign_k, pk_x, pk_y, message):
     client = connect()
-    res = beam.verify_message(client, nonce_pub_x, nonce_pub_y, sign_k, pk, message);
+    res = beam.verify_message(client, nonce_pub_x, nonce_pub_y, sign_k, pk_x, pk_y, message);
 
     print('Ok')
     print('Original message: {}'.format(message))
