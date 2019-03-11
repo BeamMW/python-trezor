@@ -30,7 +30,7 @@ def sign_message(client, message, show_display=True):
         messages.BeamSignMessage(msg=message, show_display=show_display)
     )
 
-def verify_message(client, nonce_pub_x, nonce_pub_y, sign_k, message):
+def verify_message(client, nonce_pub_x, nonce_pub_y, sign_k, pk, message):
     if nonce_pub_x.startswith('0x'):
         nonce_pub_x = nonce_pub_x[2:]
         print('X: {}'.format(nonce_pub_x))
@@ -40,16 +40,20 @@ def verify_message(client, nonce_pub_x, nonce_pub_y, sign_k, message):
     if sign_k.startswith('0x'):
         sign_k = sign_k[2:]
         print('K: {}'.format(sign_k))
+    if pk.startswith('0x'):
+        pk = pk[2:]
+        print('PK: {}'.format(pk))
     nonce_pub_x = bytearray.fromhex(nonce_pub_x)
     nonce_pub_y = bytearray.fromhex(nonce_pub_y)
     sign_k = bytearray.fromhex(sign_k)
+    pk = bytearray.fromhex(pk)
     message=normalize_nfc(message)
 
     try:
         signature = messages.BeamSignature(nonce_pub_x=nonce_pub_x, nonce_pub_y=nonce_pub_y, sign_k=sign_k)
         resp = client.call(
             messages.BeamVerifyMessage(
-                signature=signature, message=message
+                signature=signature, xpub=pk, message=message
             )
         )
     except CallException as e:
@@ -57,3 +61,9 @@ def verify_message(client, nonce_pub_x, nonce_pub_y, sign_k, message):
     if isinstance(resp, messages.Success):
         return True
     return False
+
+@expect(messages.BeamPublicKey)
+def get_public_key(client, show_display=True):
+    return client.call(
+        messages.BeamGetPublicKey(show_display=show_display)
+    )
