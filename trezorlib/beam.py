@@ -58,6 +58,12 @@ def get_public_key(client, show_display=True):
         messages.BeamGetPublicKey(show_display=show_display)
     )
 
+@expect(messages.BeamOwnerKey)
+def get_owner_key(client, show_display=True):
+    return client.call(
+        messages.BeamGetOwnerKey(show_display=show_display)
+    )
+
 def hex_str_to_bytearray(hex_data, name='', print_info=False):
     if hex_data.startswith('0x'):
         hex_data = hex_data[2:]
