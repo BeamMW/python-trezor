@@ -64,6 +64,19 @@ def get_owner_key(client, show_display=True):
         messages.BeamGetOwnerKey(show_display=show_display)
     )
 
+@expect(messages.BeamPublicKey)
+def generate_key(client, kidv_idx, kidv_type, kidv_sub_idx, kidv_value, is_coin_key):
+    kidv = messages.BeamKeyIDV(idx=int(kidv_idx), type=int(kidv_type), sub_idx=int(kidv_sub_idx), value=int(kidv_value))
+    return client.call(
+        messages.BeamGenerateKey(kidv=kidv, is_coin_key=is_coin_key)
+    )
+
+@expect(messages.BeamECCImage)
+def generate_nonce(client, slot):
+    return client.call(
+        messages.BeamGenerateNonce(slot=int(slot))
+    )
+
 def hex_str_to_bytearray(hex_data, name='', print_info=False):
     if hex_data.startswith('0x'):
         hex_data = hex_data[2:]

@@ -1699,10 +1699,31 @@ def beam_verify_message(connect, nonce_pub_x, nonce_pub_y, sign_k, pk_x, pk_y, m
     print('Received message: {}'.format(res))
     return res
 
+@cli.command(help="Generate key image for given KIDV")
+@click.argument("kidv_idx")
+@click.argument("kidv_type")
+@click.argument("kidv_sub_idx")
+@click.argument("kidv_value")
+@click.option("--coin-key", is_flag=True)
+@click.pass_obj
+def beam_generate_key(connect, kidv_idx, kidv_type, kidv_sub_idx, kidv_value, coin_key):
+    client = connect()
+    res = beam.generate_key(client, kidv_idx, kidv_type, kidv_sub_idx, kidv_value, coin_key)
+
+    return res
+
+@cli.command(help="Generates nonce for given slot and returns its image")
+#@click.argument("slot")
+@click.option("-n", "--slot", required=True, help="Slot where to nonce should be stored. Value should be in range (0, 255)")
+@click.pass_obj
+def beam_generate_nonce(connect, slot):
+    client=connect()
+
+    return beam.generate_nonce(client, slot)
+
 #
 # Ontology functions
 #
-
 
 @cli.command(help="Get Ontology address for specified path.")
 @click.option(
