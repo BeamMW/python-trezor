@@ -1725,12 +1725,11 @@ def beam_generate_nonce(connect, slot):
 @click.argument("kidv_type")
 @click.argument("kidv_sub_idx")
 @click.argument("kidv_value")
-@click.option("-n", "--slot", required=True, help="Slot where to nonce should be stored. Value should be in range (0, 255)")
 @click.option("--is-public", is_flag=True)
 @click.pass_obj
-def beam_generate_rangeproof(connect, kidv_idx, kidv_type, kidv_sub_idx, kidv_value, slot, is_public):
+def beam_generate_rangeproof(connect, kidv_idx, kidv_type, kidv_sub_idx, kidv_value, is_public):
     client = connect()
-    return beam.generate_rangeproof(client, kidv_idx, kidv_type, kidv_sub_idx, kidv_value, slot, is_public)
+    return beam.generate_rangeproof(client, kidv_idx, kidv_type, kidv_sub_idx, kidv_value, is_public)
 
 #
 # Ontology functions

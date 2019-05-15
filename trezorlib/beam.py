@@ -78,10 +78,10 @@ def generate_nonce(client, slot):
     )
 
 @expect(messages.BeamRangeproofData)
-def generate_rangeproof(client, kidv_idx, kidv_type, kidv_sub_idx, kidv_value, nonce_slot, is_public):
+def generate_rangeproof(client, kidv_idx, kidv_type, kidv_sub_idx, kidv_value, is_public):
     kidv = messages.BeamKeyIDV(idx=int(kidv_idx), type=int(kidv_type), sub_idx=int(kidv_sub_idx), value=int(kidv_value))
     return client.call(
-        messages.BeamGenerateRangeproof(kidv=kidv, slot=int(nonce_slot), is_public=is_public)
+        messages.BeamGenerateRangeproof(kidv=kidv, is_public=is_public)
     )
 
 def hex_str_to_bytearray(hex_data, name='', print_info=False):
