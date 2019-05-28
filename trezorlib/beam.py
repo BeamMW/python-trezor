@@ -14,8 +14,41 @@
 # You should have received a copy of the License along with this library.
 # If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.
 
+from typing import List
+
 from . import messages
-from .tools import expect, CallException, normalize_nfc
+from .tools import expect, session, CallException, normalize_nfc
+
+REQUIRED_FIELDS_KIDV = [
+    'idx',
+    'type',
+    'sub_idx',
+    'value',
+]
+REQUIRED_FIELDS_TRANSACTION = [
+    'inputs',
+    'outputs',
+    'offset_sk',
+    'nonce_slot',
+    'kernel_parameters',
+]
+REQUIRED_FIELDS_KERNEL_PARAMS = [
+    'fee',
+    'commitment',
+    'min_height',
+    'max_height',
+    'asset_emission',
+    'hash_lock',
+    'multisig',
+]
+REQUIRED_FIELDS_ECC_POINT = [
+    'x',
+    'y',
+]
+REQUIRED_FIELDS_MULTISIG = [
+    'nonce',
+    'excess',
+]
 
 
 @expect(messages.BeamConfirmResponseMessage, field='text')
@@ -71,18 +104,104 @@ def generate_key(client, kidv_idx, kidv_type, kidv_sub_idx, kidv_value, is_coin_
         messages.BeamGenerateKey(kidv=kidv, is_coin_key=is_coin_key)
     )
 
-@expect(messages.BeamECCImage)
+@expect(messages.BeamECCPoint)
 def generate_nonce(client, slot):
     return client.call(
         messages.BeamGenerateNonce(slot=int(slot))
     )
 
 @expect(messages.BeamRangeproofData)
-def generate_rangeproof(client, kidv_idx, kidv_type, kidv_sub_idx, kidv_value, is_public):
+def generate_rangeproof(client,
+                        kidv_idx, kidv_type, kidv_sub_idx, kidv_value,
+                        is_public
+):
     kidv = messages.BeamKeyIDV(idx=int(kidv_idx), type=int(kidv_type), sub_idx=int(kidv_sub_idx), value=int(kidv_value))
     return client.call(
         messages.BeamGenerateRangeproof(kidv=kidv, is_public=is_public)
     )
+
+@session
+@expect(messages.BeamSignedTransaction)
+def sign_tx(client,
+            inputs: List[messages.BeamKeyIDV],
+            outputs: List[messages.BeamKeyIDV],
+            offset_sk,
+            nonce_slot,
+            kernel_params,
+):
+    response = client.call(
+        messages.BeamSignTransaction(
+            inputs=inputs,
+            outputs=outputs,
+            offset_sk=offset_sk,
+            nonce_slot=nonce_slot,
+            kernel_params=kernel_params,
+        )
+    )
+    return response
+
+def _check_required_fields(data, required_fields, error_message):
+    missing_fields = [field for field in required_fields if field not in data.keys()]
+
+    if missing_fields:
+        raise ValueError(error_message + ": The structure is missing some fields: " + str(missing_fields))
+
+def check_transaction_data(transaction):
+    _check_required_fields(transaction, REQUIRED_FIELDS_TRANSACTION, 'The transaction is missing some fields')
+
+    for input in transaction['inputs']:
+        _check_required_fields(input, REQUIRED_FIELDS_KIDV, 'Input')
+    for output in transaction['outputs']:
+        _check_required_fields(output, REQUIRED_FIELDS_KIDV, 'Output')
+
+    _check_required_fields(
+        transaction['kernel_parameters'],
+        REQUIRED_FIELDS_KERNEL_PARAMS,
+        'Kernel parameters are missing some fields')
+    _check_required_fields(
+        transaction['kernel_parameters']['multisig'],
+        REQUIRED_FIELDS_MULTISIG,
+        'Multisig is missing some fields')
+    _check_required_fields(
+        transaction['kernel_parameters']['multisig']['nonce'],
+        REQUIRED_FIELDS_ECC_POINT,
+        'Multisig nonce is missing some fields')
+    _check_required_fields(
+        transaction['kernel_parameters']['multisig']['excess'],
+        REQUIRED_FIELDS_ECC_POINT,
+        'Multisig nonce is missing some fields')
+
+def create_kidv(kidv) -> messages.BeamKeyIDV:
+    _check_required_fields(kidv, REQUIRED_FIELDS_KIDV, 'Input/Output')
+
+    return messages.BeamKeyIDV(
+        idx=int(kidv['idx']),
+        type=int(kidv['type']),
+        sub_idx=int(kidv['sub_idx']),
+        value=int(kidv['value'])
+    )
+
+def create_point(point) -> messages.BeamECCPoint:
+    _check_required_fields(point, REQUIRED_FIELDS_ECC_POINT, 'ECC Point')
+
+    return messages.BeamECCPoint(
+        x=point['x'],
+        y=point['y'],
+    )
+
+def create_kernel_params(params) -> messages.BeamKernelParameters:
+    _check_required_fields(params, REQUIRED_FIELDS_KERNEL_PARAMS, 'Kernel parameters')
+
+    return messages.BeamKernelParameters(
+        fee=int(params['fee']),
+        commitment=create_point(params['commitment']),
+        min_height=int(params['min_height']),
+        max_height=int(params['max_height']),
+        asset_emission=int(params['asset_emission']),
+        hash_lock=params['hash_lock'],
+        multisig_nonce=create_point(params['multisig']['nonce']),
+        multisig_excess=create_point(params['multisig']['excess'],
+    ))
 
 def hex_str_to_bytearray(hex_data, name='', print_info=False):
     if hex_data.startswith('0x'):
