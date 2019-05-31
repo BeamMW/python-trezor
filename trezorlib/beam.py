@@ -133,8 +133,8 @@ def sign_tx(client,
         messages.BeamSignTransaction(
             inputs=inputs,
             outputs=outputs,
-            offset_sk=offset_sk,
-            nonce_slot=nonce_slot,
+            offset_sk=bytearray(offset_sk, 'utf-8'),
+            nonce_slot=int(nonce_slot),
             kernel_params=kernel_params,
         )
     )
@@ -157,19 +157,19 @@ def check_transaction_data(transaction):
     _check_required_fields(
         transaction['kernel_parameters'],
         REQUIRED_FIELDS_KERNEL_PARAMS,
-        'Kernel parameters are missing some fields')
+        'Kernel parameters')
     _check_required_fields(
         transaction['kernel_parameters']['multisig'],
         REQUIRED_FIELDS_MULTISIG,
-        'Multisig is missing some fields')
+        'Multisig')
     _check_required_fields(
         transaction['kernel_parameters']['multisig']['nonce'],
         REQUIRED_FIELDS_ECC_POINT,
-        'Multisig nonce is missing some fields')
+        'Multisig')
     _check_required_fields(
         transaction['kernel_parameters']['multisig']['excess'],
         REQUIRED_FIELDS_ECC_POINT,
-        'Multisig nonce is missing some fields')
+        'Multisig')
 
 def create_kidv(kidv) -> messages.BeamKeyIDV:
     _check_required_fields(kidv, REQUIRED_FIELDS_KIDV, 'Input/Output')
@@ -185,8 +185,8 @@ def create_point(point) -> messages.BeamECCPoint:
     _check_required_fields(point, REQUIRED_FIELDS_ECC_POINT, 'ECC Point')
 
     return messages.BeamECCPoint(
-        x=point['x'],
-        y=point['y'],
+        x=bytearray(point['x'], 'utf-8'),
+        y=bool(point['y']),
     )
 
 def create_kernel_params(params) -> messages.BeamKernelParameters:
@@ -198,7 +198,7 @@ def create_kernel_params(params) -> messages.BeamKernelParameters:
         min_height=int(params['min_height']),
         max_height=int(params['max_height']),
         asset_emission=int(params['asset_emission']),
-        hash_lock=params['hash_lock'],
+        hash_lock=bytearray(params['hash_lock'], 'utf-8'),
         multisig_nonce=create_point(params['multisig']['nonce']),
         multisig_excess=create_point(params['multisig']['excess'],
     ))
