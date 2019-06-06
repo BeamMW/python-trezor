@@ -1635,26 +1635,14 @@ def tezos_sign_tx(connect, address, file):
 #
 # BEAM functions
 #
-@cli.command(help="Display Beam Message.")
-@click.option("-t", "--text", required=True, help="Some text to display")
-@click.option("-d", "--show-display", is_flag=True)
-@click.pass_obj
-def beam_display_message(connect, text, show_display):
-    client = connect()
-    res =  beam.display_message(client, text, show_display)
-    print('Ok')
-    print('Original message: {}'.format(text))
-    print('Received message: {}'.format(res))
-    #print('Received message: {}'.format(res.text))
-    #print('Status: {}'.format(res.response))
-    return res
-
 @cli.command(help="Get Beam public key.")
+@click.argument("kid-idx")
+@click.argument("kid-sub-idx")
 @click.option("-d", "--show-display", is_flag=True)
 @click.pass_obj
-def beam_get_public_key(connect, show_display):
+def beam_get_public_key(connect, kid_idx, kid_sub_idx, show_display):
     client = connect()
-    res = beam.get_public_key(client, show_display)
+    res = beam.get_public_key(client, kid_idx, kid_sub_idx, show_display)
     print('Ok')
     print('Received message: {}'.format(res))
     return res
@@ -1671,11 +1659,13 @@ def beam_get_owner_key(connect, show_display):
 
 @cli.command(help="Sign message with Beam SK.")
 @click.argument("message")
+@click.argument("kid-idx")
+@click.argument("kid-sub-idx")
 @click.option("-d", "--show-display", is_flag=True)
 @click.pass_obj
-def beam_sign_message(connect, message, show_display):
+def beam_sign_message(connect, message, kid_idx, kid_sub_idx, show_display):
     client = connect()
-    res = beam.sign_message(client, message, show_display)
+    res = beam.sign_message(client, message, kid_idx, kid_sub_idx, show_display)
 
     print('Ok')
     print('Original message: {}'.format(message))

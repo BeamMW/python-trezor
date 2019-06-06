@@ -51,29 +51,23 @@ REQUIRED_FIELDS_MULTISIG = [
 ]
 
 
-@expect(messages.BeamConfirmResponseMessage, field='text')
-def display_message(client, text, show_display=True):
+@expect(messages.BeamSignature)
+def sign_message(client, message, kid_idx, kid_sub_idx, show_display=True):
     return client.call(
-        messages.BeamDisplayMessage(text=text, show_display=show_display)
-    )
-
-@expect(messages.BeamSignedMessage)
-def sign_message(client, message, show_display=True):
-    return client.call(
-        messages.BeamSignMessage(msg=message, show_display=show_display)
+        messages.BeamSignMessage(msg=message, kid_idx=int(kid_idx), kid_sub_idx=int(kid_sub_idx), show_display=show_display)
     )
 
 def verify_message(client, nonce_pub_x, nonce_pub_y, sign_k, pk_x, pk_y, message):
     nonce_pub_x = hex_str_to_bytearray(nonce_pub_x, 'Nonce X', True)
-    nonce_pub_y = hex_str_to_bytearray(nonce_pub_y, 'Nonce Y', True)
+    nonce_pub_y = int(nonce_pub_y)
     sign_k = hex_str_to_bytearray(sign_k, 'K', True)
     pk_x = hex_str_to_bytearray(pk_x, 'PK X', True)
-    pk_y = hex_str_to_bytearray(pk_y, 'PK Y', True)
+    pk_y = int(pk_y)
     message=normalize_nfc(message)
 
     try:
-        signature = messages.BeamSignature(nonce_pub_x=nonce_pub_x, nonce_pub_y=nonce_pub_y, sign_k=sign_k)
-        public_key = messages.BeamPublicKey(pub_x=pk_x, pub_y=pk_y)
+        signature = messages.BeamSignature(nonce_pub=messages.BeamECCPoint(x=nonce_pub_x, y=nonce_pub_y), sign_k=sign_k)
+        public_key = messages.BeamECCPoint(x=pk_x, y=pk_y)
         resp = client.call(
             messages.BeamVerifyMessage(
                 signature=signature, public_key=public_key, message=message
@@ -85,10 +79,10 @@ def verify_message(client, nonce_pub_x, nonce_pub_y, sign_k, pk_x, pk_y, message
         return True
     return False
 
-@expect(messages.BeamPublicKey)
-def get_public_key(client, show_display=True):
+@expect(messages.BeamECCPoint)
+def get_public_key(client, kid_idx, kid_sub_idx, show_display=True):
     return client.call(
-        messages.BeamGetPublicKey(show_display=show_display)
+        messages.BeamGetPublicKey(kid_idx=int(kid_idx), kid_sub_idx=int(kid_sub_idx), show_display=show_display)
     )
 
 @expect(messages.BeamOwnerKey)
@@ -97,7 +91,7 @@ def get_owner_key(client, show_display=True):
         messages.BeamGetOwnerKey(show_display=show_display)
     )
 
-@expect(messages.BeamPublicKey)
+@expect(messages.BeamECCPoint)
 def generate_key(client, kidv_idx, kidv_type, kidv_sub_idx, kidv_value, is_coin_key):
     kidv = messages.BeamKeyIDV(idx=int(kidv_idx), type=int(kidv_type), sub_idx=int(kidv_sub_idx), value=int(kidv_value))
     return client.call(
