@@ -19,7 +19,6 @@ import pytest
 from trezorlib import beam
 from trezorlib import messages
 
-from .conftest import setup_client
 from .common import TrezorTest
 
 import binascii
@@ -77,12 +76,6 @@ class TestBeamGenerateKey(TrezorTest):
         is_coin_key = True
 
         generated_key = beam.generate_key(self.client, idx, type, sub_idx, value, is_coin_key)
-        print(generated_key)
-        assert(binascii.hexlify(bytearray(generated_key.x)).decode('ascii') == expected_key_image_x)
-        #assert('{:02x}'.format(generated_key.x.decode('utf-8')) == expected_key_image_x)
-        #assert(int(generated_key.y) == 1)
+        assert(generated_key.x.hex() == expected_key_image_x)
 
-
-if __name__ == '__main__':
-    unittest.main()
 
