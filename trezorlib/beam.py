@@ -104,6 +104,12 @@ def generate_nonce(client, slot):
         messages.BeamGenerateNonce(slot=int(slot))
     )
 
+@expect(messages.BeamECCPoint)
+def get_nonce_image(client, slot):
+    return client.call(
+        messages.BeamGetNoncePublic(slot=int(slot))
+    )
+
 @expect(messages.BeamRangeproofData)
 def generate_rangeproof(client,
                         kidv_idx, kidv_type, kidv_sub_idx, kidv_value,

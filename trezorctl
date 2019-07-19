@@ -1689,7 +1689,7 @@ def beam_verify_message(connect, nonce_pub_x, nonce_pub_y, sign_k, pk_x, pk_y, m
     print('Received message: {}'.format(res))
     return res
 
-@cli.command(help="Generate key image for given KIDV")
+@cli.command(help="Generate key image for the given KIDV")
 @click.argument("kidv_idx")
 @click.argument("kidv_type")
 @click.argument("kidv_sub_idx")
@@ -1702,7 +1702,7 @@ def beam_generate_key(connect, kidv_idx, kidv_type, kidv_sub_idx, kidv_value, co
 
     return res
 
-@cli.command(help="Generates nonce for given slot and returns its image")
+@cli.command(help="Generate a nonce for the given slot and get its public image")
 @click.option("-n", "--slot", required=True, help="Slot where to nonce should be stored. Value should be in range (0, 255)")
 @click.pass_obj
 def beam_generate_nonce(connect, slot):
@@ -1710,7 +1710,15 @@ def beam_generate_nonce(connect, slot):
 
     return beam.generate_nonce(client, slot)
 
-@cli.command(help="Generates and returns rangeproof (public or confidential) for given kidv and nonce slot")
+@cli.command(help="Get a public image of the nonce for the given slot")
+@click.option("-n", "--slot", required=True, help="Slot where to nonce should be stored. Value should be in range (0, 255)")
+@click.pass_obj
+def beam_get_nonce_image(connect, slot):
+    client=connect()
+
+    return beam.get_nonce_image(client, slot)
+
+@cli.command(help="Generate and get a rangeproof (public or confidential) for the given kidv and nonce slot")
 @click.argument("kidv_idx")
 @click.argument("kidv_type")
 @click.argument("kidv_sub_idx")
