@@ -15,11 +15,8 @@
 # If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.
 
 import pytest
-import binascii
 
-from trezorlib import beam
-from trezorlib import messages
-from trezorlib import device
+from trezorlib import beam, messages
 
 from .common import TrezorTest
 
