@@ -101,10 +101,48 @@ class TestBeamSignVerifyMessage(TrezorTest):
             client, kid_idx, kid_sub_idx, message, nonce_pub_x, nonce_pub_y, sign_k, expected_is_valid):
         self.setup_mnemonic_allallall()
 
-        pk = beam.get_public_key(client, kid_idx, kid_sub_idx, False)
-        is_verified = beam.verify_message(
-            client, nonce_pub_x, nonce_pub_y, sign_k, pk.x.hex(), pk.y, message)
-        assert(is_verified == expected_is_valid)
+        expected_responses_positive = [
+            # Public Key
+            messages.BeamECCPoint(),
+            # Verify process
+            messages.ButtonRequest(code=messages.ButtonRequestType.Other),
+            messages.ButtonRequest(code=messages.ButtonRequestType.Other),
+            messages.ButtonRequest(code=messages.ButtonRequestType.Other),
+            messages.ButtonRequest(code=messages.ButtonRequestType.Other),
+            messages.ButtonRequest(code=messages.ButtonRequestType.Other),
+            messages.Success()
+        ]
+        expected_responses_negative = [
+            # Public Key
+            messages.BeamECCPoint(),
+            # Verify process
+            messages.Failure(code=messages.FailureType.InvalidSignature)
+        ]
+
+        def input_flow():
+            self.client.debug.press_yes()
+            yield
+            self.client.debug.press_yes()
+            yield
+            self.client.debug.press_yes()
+            yield
+            self.client.debug.press_yes()
+            yield
+            self.client.debug.press_yes()
+            yield
+            self.client.debug.press_yes()
+
+        with self.client:
+            if expected_is_valid:
+                self.client.set_expected_responses(expected_responses_positive)
+            else:
+                self.client.set_expected_responses(expected_responses_negative)
+            self.client.set_input_flow(input_flow)
+
+            pk = beam.get_public_key(self.client, kid_idx, kid_sub_idx, False)
+            is_verified = beam.verify_message(
+                self.client, nonce_pub_x, nonce_pub_y, sign_k, pk.x.hex(), pk.y, message)
+            assert(is_verified == expected_is_valid)
 
     @pytest.mark.parametrize(
         "message, nonce_pub_x, nonce_pub_y, sign_k, pk_x, pk_y, expected_is_valid", [
@@ -162,9 +200,43 @@ class TestBeamSignVerifyMessage(TrezorTest):
             client, message, nonce_pub_x, nonce_pub_y, sign_k, pk_x, pk_y, expected_is_valid):
         self.setup_mnemonic_allallall()
 
-        is_verified = beam.verify_message(
-            client, nonce_pub_x, nonce_pub_y, sign_k, pk_x, pk_y, message)
-        assert(is_verified == expected_is_valid)
+        expected_responses_positive = [
+            # Verify process
+            messages.ButtonRequest(code=messages.ButtonRequestType.Other),
+            messages.ButtonRequest(code=messages.ButtonRequestType.Other),
+            messages.ButtonRequest(code=messages.ButtonRequestType.Other),
+            messages.ButtonRequest(code=messages.ButtonRequestType.Other),
+            messages.ButtonRequest(code=messages.ButtonRequestType.Other),
+            messages.Success()
+        ]
+        expected_responses_negative = [
+            # Verify process
+            messages.Failure(code=messages.FailureType.InvalidSignature)
+        ]
+
+        def input_flow():
+            self.client.debug.press_yes()
+            yield
+            self.client.debug.press_yes()
+            yield
+            self.client.debug.press_yes()
+            yield
+            self.client.debug.press_yes()
+            yield
+            self.client.debug.press_yes()
+            yield
+            self.client.debug.press_yes()
+
+        with self.client:
+            if expected_is_valid:
+                self.client.set_expected_responses(expected_responses_positive)
+            else:
+                self.client.set_expected_responses(expected_responses_negative)
+            self.client.set_input_flow(input_flow)
+
+            is_verified = beam.verify_message(
+                self.client, nonce_pub_x, nonce_pub_y, sign_k, pk_x, pk_y, message)
+            assert(is_verified == expected_is_valid)
 
     @pytest.mark.parametrize(
         "kid_idx, kid_sub_idx, message", [
@@ -197,9 +269,47 @@ class TestBeamSignVerifyMessage(TrezorTest):
     def test_beam_sign_message(self, client, kid_idx, kid_sub_idx, message):
         self.setup_mnemonic_allallall()
 
-        signature = beam.sign_message(client, message, kid_idx, kid_sub_idx)
-        pk = beam.get_public_key(client, kid_idx, kid_sub_idx, False)
-        is_verified = beam.verify_message(
-            client, signature.nonce_pub.x.hex(), signature.nonce_pub.y, signature.sign_k.hex(), pk.x.hex(), pk.y, message)
-        assert(is_verified == True)
+        expected_responses = [
+            # Sign message
+            messages.ButtonRequest(code=messages.ButtonRequestType.Other),
+            messages.ButtonRequest(code=messages.ButtonRequestType.Other),
+            # Signature
+            messages.BeamSignature(),
+            # Public Key
+            messages.BeamECCPoint(),
+            # Verify process
+            messages.ButtonRequest(code=messages.ButtonRequestType.Other),
+            messages.ButtonRequest(code=messages.ButtonRequestType.Other),
+            messages.ButtonRequest(code=messages.ButtonRequestType.Other),
+            messages.ButtonRequest(code=messages.ButtonRequestType.Other),
+            messages.ButtonRequest(code=messages.ButtonRequestType.Other),
+            messages.Success()
+        ]
+
+        def input_flow():
+            self.client.debug.press_yes()
+            yield
+            self.client.debug.press_yes()
+            yield
+            self.client.debug.press_yes()
+            yield
+            self.client.debug.press_yes()
+            yield
+            self.client.debug.press_yes()
+            yield
+            self.client.debug.press_yes()
+            yield
+            self.client.debug.press_yes()
+            yield
+            self.client.debug.press_yes()
+
+        with self.client:
+            self.client.set_expected_responses(expected_responses)
+            self.client.set_input_flow(input_flow)
+
+            signature = beam.sign_message(self.client, message, kid_idx, kid_sub_idx)
+            pk = beam.get_public_key(self.client, kid_idx, kid_sub_idx, False)
+            is_verified = beam.verify_message(
+                self.client, signature.nonce_pub.x.hex(), signature.nonce_pub.y, signature.sign_k.hex(), pk.x.hex(), pk.y, message)
+            assert(is_verified == True)
 

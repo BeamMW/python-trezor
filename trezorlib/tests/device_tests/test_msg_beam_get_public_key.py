@@ -64,9 +64,9 @@ class TestBeamGetPublicKey(TrezorTest):
 
         def input_flow():
             yield
-            client.debug.press_yes()
+            self.client.debug.press_yes()
             yield
-            client.debug.press_yes()
+            self.client.debug.press_yes()
 
 
         with self.client:

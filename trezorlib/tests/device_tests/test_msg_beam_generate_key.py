@@ -16,15 +16,14 @@
 
 import pytest
 
-from trezorlib import beam
-from trezorlib import messages
+from trezorlib import beam, messages
 
 from .common import TrezorTest
 
 import binascii
 
-@pytest.mark.beam
 @pytest.mark.skip_t1 # T1 support is not planned
+@pytest.mark.beam
 class TestBeamGenerateKey(TrezorTest):
     @pytest.mark.parametrize(
         "idx, type, sub_idx, value, expected_key_image_x, expected_key_image_y",
@@ -75,7 +74,14 @@ class TestBeamGenerateKey(TrezorTest):
         self.setup_mnemonic_allallall()
         is_coin_key = True
 
-        generated_key = beam.generate_key(self.client, idx, type, sub_idx, value, is_coin_key)
-        assert(generated_key.x.hex() == expected_key_image_x)
-        assert(int(generated_key.y) == expected_key_image_y)
+        expected_responses = [
+            messages.BeamECCPoint()
+        ]
+
+        with self.client:
+            self.client.set_expected_responses(expected_responses)
+
+            generated_key = beam.generate_key(self.client, idx, type, sub_idx, value, is_coin_key)
+            assert(generated_key.x.hex() == expected_key_image_x)
+            assert(int(generated_key.y) == expected_key_image_y)
 

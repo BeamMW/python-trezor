@@ -1744,18 +1744,10 @@ def beam_sign_tx(connect, file):
     transaction = json.load(file)
     beam.check_transaction_data(transaction)
 
-    #dumped = json.dumps(transaction, ensure_ascii=False).encode('utf-8')
-    #print(dumped)
-    #decoded = dumped.decode('utf-8')
-    #print(decoded)
-
     inputs = [beam.create_kidv(input) for input in transaction['inputs']]
     outputs = [beam.create_kidv(output) for output in transaction['outputs']]
-    #print('Inputs: ' + str(inputs))
-    #print('Outputs: ' + str(outputs))
 
     kernel_params = beam.create_kernel_params(transaction['kernel_parameters'])
-    #print('Kernel parmas: ' + str(kernel_params))
 
     signed_transaction = beam.sign_tx(
         client,
